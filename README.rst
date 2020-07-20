@@ -1,6 +1,7 @@
 pybloom
 =======
 
+
 .. image:: https://travis-ci.org/jaybaird/python-bloomfilter.svg?branch=master
     :target: https://travis-ci.org/jaybaird/python-bloomfilter
 
@@ -9,6 +10,13 @@ an implmentation of Scalable Bloom Filters as discussed in:
 
 P. Almeida, C.Baquero, N. Preguiça, D. Hutchison, Scalable Bloom Filters,
 (GLOBECOM 2007), IEEE, 2007.
+
+
+Install 
+=======
+.. code-block:: python
+
+    $ pip install pybloom3
 
 Bloom filters are great if you understand what amount of bits you need to set
 aside early to store your entire set. Scalable Bloom Filters allow your bloom
