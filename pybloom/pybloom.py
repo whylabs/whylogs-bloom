@@ -45,11 +45,12 @@ except ImportError:
     raise ImportError('pybloom requires bitarray >= 0.3.4')
 
 __version__ = '2.0'
-__author__  = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
+__author__ = "Jay Baird <jay.baird@me.com>, Bob Ippolito <bob@redivi.com>,\
                Marius Eriksen <marius@monkey.org>,\
                Alex Brasetvik <alex@brasetvik.com>,\
                Matt Bachmann <bachmann.matt@gmail.com>,\
               "
+
 
 def make_hashfuncs(num_slices, num_bits):
     if num_bits >= (1 << 31):
@@ -73,7 +74,9 @@ def make_hashfuncs(num_slices, num_bits):
     num_salts, extra = divmod(num_slices, len(fmt))
     if extra:
         num_salts += 1
-    salts = tuple(hashfn(hashfn(pack('I', i)).digest()) for i in range_fn(num_salts))
+    salts = tuple(
+        hashfn(hashfn(pack('I', i)).digest()) for i in range_fn(num_salts))
+
     def _make_hashfuncs(key):
         if running_python_3:
             if isinstance(key, str):
@@ -81,10 +84,10 @@ def make_hashfuncs(num_slices, num_bits):
             else:
                 key = str(key).encode('utf-8')
         else:
-            if isinstance(key, unicode):
-                key = key.encode('utf-8')
-            else:
+            if str.isascii(key):
                 key = str(key)
+            else:
+                key = key.encode('utf-8')
         i = 0
         for salt in salts:
             h = salt.copy()
@@ -131,9 +134,9 @@ class BloomFilter(object):
         # n ~= (k * m) * ((ln(2) ** 2) / abs(ln(P)))
         # m ~= n * abs(ln(P)) / (k * (ln(2) ** 2))
         num_slices = int(math.ceil(math.log(1.0 / error_rate, 2)))
-        bits_per_slice = int(math.ceil(
-            (capacity * abs(math.log(error_rate))) /
-            (num_slices * (math.log(2) ** 2))))
+        bits_per_slice = int(
+            math.ceil((capacity * abs(math.log(error_rate))) /
+                      (num_slices * (math.log(2)**2))))
         self._setup(error_rate, num_slices, bits_per_slice, capacity, 0)
         self.bitarray = bitarray.bitarray(self.num_bits, endian='little')
         self.bitarray.setall(False)
@@ -245,10 +248,11 @@ have equal capacity and error rate")
         """Write the bloom filter to file object `f'. Underlying bits
         are written as machine values. This is much more space
         efficient than pickling the object."""
-        f.write(pack(self.FILE_FMT, self.error_rate, self.num_slices,
-                     self.bits_per_slice, self.capacity, self.count))
-        (f.write(self.bitarray.tobytes()) if is_string_io(f)
-         else self.bitarray.tofile(f))
+        f.write(
+            pack(self.FILE_FMT, self.error_rate, self.num_slices,
+                 self.bits_per_slice, self.capacity, self.count))
+        (f.write(self.bitarray.tobytes())
+         if is_string_io(f) else self.bitarray.tofile(f))
 
     @classmethod
     def fromfile(cls, f, n=-1):
@@ -263,11 +267,11 @@ have equal capacity and error rate")
         filter._setup(*unpack(cls.FILE_FMT, f.read(headerlen)))
         filter.bitarray = bitarray.bitarray(endian='little')
         if n > 0:
-            (filter.bitarray.frombytes(f.read(n-headerlen)) if is_string_io(f)
-             else filter.bitarray.fromfile(f, n - headerlen))
+            (filter.bitarray.frombytes(f.read(n - headerlen)) if
+             is_string_io(f) else filter.bitarray.fromfile(f, n - headerlen))
         else:
-            (filter.bitarray.frombytes(f.read()) if is_string_io(f)
-             else filter.bitarray.fromfile(f))
+            (filter.bitarray.frombytes(f.read())
+             if is_string_io(f) else filter.bitarray.fromfile(f))
         if filter.num_bits != filter.bitarray.length() and \
                (filter.num_bits + (8 - filter.num_bits % 8)
                 != filter.bitarray.length()):
@@ -284,12 +288,15 @@ have equal capacity and error rate")
         self.__dict__.update(d)
         self.make_hashes = make_hashfuncs(self.num_slices, self.bits_per_slice)
 
+
 class ScalableBloomFilter(object):
-    SMALL_SET_GROWTH = 2 # slower, but takes up less memory
-    LARGE_SET_GROWTH = 4 # faster, but takes up more memory faster
+    SMALL_SET_GROWTH = 2  # slower, but takes up less memory
+    LARGE_SET_GROWTH = 4  # faster, but takes up more memory faster
     FILE_FMT = '<idQd'
 
-    def __init__(self, initial_capacity=100, error_rate=0.001,
+    def __init__(self,
+                 initial_capacity=100,
+                 error_rate=0.001,
                  mode=SMALL_SET_GROWTH):
         """Implements a space-efficient probabilistic data structure that
         grows as more items are added while maintaining a steady false
@@ -362,16 +369,15 @@ class ScalableBloomFilter(object):
         if key in self:
             return True
         if not self.filters:
-            filter = BloomFilter(
-                capacity=self.initial_capacity,
-                error_rate=self.error_rate * (1.0 - self.ratio))
+            filter = BloomFilter(capacity=self.initial_capacity,
+                                 error_rate=self.error_rate *
+                                 (1.0 - self.ratio))
             self.filters.append(filter)
         else:
             filter = self.filters[-1]
             if filter.count >= filter.capacity:
-                filter = BloomFilter(
-                    capacity=filter.capacity * self.scale,
-                    error_rate=filter.error_rate * self.ratio)
+                filter = BloomFilter(capacity=filter.capacity * self.scale,
+                                     error_rate=filter.error_rate * self.ratio)
                 self.filters.append(filter)
         filter.add(key, skip_check=True)
         return False
@@ -388,8 +394,9 @@ class ScalableBloomFilter(object):
     def tofile(self, f):
         """Serialize this ScalableBloomFilter into the file-object
         `f'."""
-        f.write(pack(self.FILE_FMT, self.scale, self.ratio,
-                     self.initial_capacity, self.error_rate))
+        f.write(
+            pack(self.FILE_FMT, self.scale, self.ratio, self.initial_capacity,
+                 self.error_rate))
 
         # Write #-of-filters
         f.write(pack(b'<l', len(self.filters)))
@@ -398,7 +405,7 @@ class ScalableBloomFilter(object):
             # Then each filter directly, with a header describing
             # their lengths.
             headerpos = f.tell()
-            headerfmt = b'<' + b'Q'*(len(self.filters))
+            headerfmt = b'<' + b'Q' * (len(self.filters))
             f.write(b'.' * calcsize(headerfmt))
             filter_sizes = []
             for filter in self.filters:
@@ -416,7 +423,7 @@ class ScalableBloomFilter(object):
         filter._setup(*unpack(cls.FILE_FMT, f.read(calcsize(cls.FILE_FMT))))
         nfilters, = unpack(b'<l', f.read(calcsize(b'<l')))
         if nfilters > 0:
-            header_fmt = b'<' + b'Q'*nfilters
+            header_fmt = b'<' + b'Q' * nfilters
             bytes = f.read(calcsize(header_fmt))
             filter_lengths = unpack(header_fmt, bytes)
             for fl in filter_lengths:
