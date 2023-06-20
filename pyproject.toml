@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "whylogs-bloom"
+version = "0.1.0"
+description = "Minor fork of http://github.com/hexmagic/python-bloomfilter/"
+authors = ["Jay Baird <jay.baird@me.com>"]
+license = "MIT License"
+readme = "README.rst"
+packages = [{include = "whylogs_bloom"}]
+
+[tool.poetry.dependencies]
+python = ">=3.7.1, <4"
+bitarray = ">=0.3.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
