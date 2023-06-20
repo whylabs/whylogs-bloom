@@ -1,6 +1,7 @@
 pybloom
 =======
 
+Minor fork of http://github.com/hexmagic/python-bloomfilter/
 
 .. image:: https://travis-ci.org/jaybaird/python-bloomfilter.svg?branch=master
     :target: https://travis-ci.org/jaybaird/python-bloomfilter
