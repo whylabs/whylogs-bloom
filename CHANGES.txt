@@ -1,3 +1,8 @@
+Changes in whylogs-bloom 0.1.0 fork
+===================================
+Use len() on bitarray rather than bitarray::length()
+Poetry build setup.
+
 Changes in 2.0
 ==============
 Made major corrections to the algorithms for both BloomFilter and

@@ -3,6 +3,7 @@ name = "whylogs-bloom"
 version = "0.1.0"
 description = "Minor fork of http://github.com/hexmagic/python-bloomfilter/"
 authors = ["Jay Baird <jay.baird@me.com>"]
+maintainers = ["Richard Rogers <richard@whylabs.ai>"]
 license = "MIT License"
 readme = "README.rst"
 packages = [{include = "whylogs_bloom"}]
